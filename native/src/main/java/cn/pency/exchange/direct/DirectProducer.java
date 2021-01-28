@@ -15,7 +15,7 @@ import java.util.concurrent.TimeoutException;
  */
 public class DirectProducer {
 
-    public final static String EXCHANGE_NAME = "direct_logs";
+    public final static String EXCHANGE_NAME = "direct_2";
 
     public static void main(String[] args)
             throws IOException, TimeoutException {
