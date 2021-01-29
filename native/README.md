@@ -57,4 +57,9 @@ channel.addReturnListener(new ReturnListener() {
 //TODO 第三个参数 就是mandatory标志位   true 确保可路由 失败检查 不可路由时回调ReturnListener的handleReturn
  channel.basicPublish(EXCHANGE_NAME,routekey,true,null,message.getBytes());
 ```
-
+####事务
+（由于性能影响较大，基本不开启）  
+事务的实现主要是对信道（Channel）的设置，主要的方法有三个：
+> 1.channel.txSelect()声明启动事务模式  
+> 2.channel.txComment()提交事务  
+> 3.channel.txRollback()回滚事务
