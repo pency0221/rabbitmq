@@ -62,4 +62,22 @@ channel.addReturnListener(new ReturnListener() {
 事务的实现主要是对信道（Channel）的设置，主要的方法有三个：
 > 1.channel.txSelect()声明启动事务模式  
 > 2.channel.txComment()提交事务  
-> 3.channel.txRollback()回滚事务
+> 3.channel.txRollback()回滚事务 
+####发送方确认
+由于事务影响性能较大，一种比较好的替代方式是开启发送方确认(confirm模式)  
+使用步骤：  
+1、发送方通道开启confirm模式：
+```
+//启用发送者确认模式
+channel.confirmSelect();
+```
+2、basicPublish发送完消息之后 选择确认方式三种之一确认rabbitmq是否收到：
+>- 方式一(同步单条确认)：channel.waitForConfirms()普通发送方确认模式；消息到达交换器，就会返回 true。  
+>- 方式二(同步批量确认)：channel.waitForConfirms()批量确认模式；使用同步方式等所有的消息发送之后才会返回确认执行后面代码，只要有一个消息未到达交换器就会抛出 IOException 异常。
+>- 方式三(异步确认)：channel.addConfirmListener()异步监听发送方确认模式；是否会批量rabbitmq内部自己平衡 混合模式  
+由于对于不可路由的消息 confirm模式也会返回ack  确认收到，所以单纯的只使用confirm确认模式并不能保证是否路由到队列上，所以confirm模式一般与mandatory失败确认(可路由检查)联合使用。  
+
+失败通知（mandatory）和发送方确认（confirm）区别辨析:  
+
+- 失败通知只针对消息是否可路由
+- 发送方确认主要针对的是出现内部错误异常时队列没收到消息的情况，对于消息不可路由的情况 rabbitmq依然响应ack
