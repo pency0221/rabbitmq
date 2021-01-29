@@ -1,3 +1,4 @@
+###Exchange
 ####direct交换器
 1.原生java客户端使用direct交换器 一般用法
 
@@ -37,5 +38,23 @@ topic的灵活之处体现在：无论是direct交换器还是fanout交换器的
   - 当一个队列以”#”作为绑定键时,它将接收所有消息,而不管路由键如何,类似于fanout型交换器
   - 当特殊字符”*”、”#”没有用到绑定时，topic型交换器就好比direct型交换器了
   
-
+###消息发布时的可靠性与性能权衡
+####失败通知
+无任何保障的发送消息给rabbitmq，如果这个消息无法被交换器路由(没有对应的队列),那么生产者也不会知道，(如果交换器也没加其他策略)相当于消息被路由器丢了。如果生产者想知道发送的消息是否可路由到队列，在发送消息时可以设置 mandatory 标志，告诉 RabbitMQ，如果消息不可路由，应该将消息返回给发送者，并通知失败。
+```
+//TODO 路由失败通知 回调
+channel.addReturnListener(new ReturnListener() {
+   public void handleReturn(int replycode, String replyText, String exchange, String routeKey, AMQP.BasicProperties basicProperties, byte[] bytes) throws IOException {
+       String message = new String(bytes);
+       System.out.println("返回的replycode:"+replycode);//错误码
+       System.out.println("返回的replyText:"+replyText);//错误提示
+       System.out.println("返回的exchange信息:"+exchange);
+       System.out.println("返回的routeKey信息:"+routeKey);
+       System.out.println("返回的消息:"+message);
+   }
+});
+......
+//TODO 第三个参数 就是mandatory标志位   true 确保可路由 失败检查 不可路由时回调ReturnListener的handleReturn
+ channel.basicPublish(EXCHANGE_NAME,routekey,true,null,message.getBytes());
+```
 
