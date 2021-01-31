@@ -85,3 +85,16 @@ channel.confirmSelect();
 在第一次声明交换器时被指定，用来提供一种预先存在的交换器，如果主交换器无法路由消息，那么消息将被路由到这个新的备用交换器  
 如果发布消息时同时设置了mandatory，因为主交换器指定了备交换器，当主交换器无法路由消息，这时候主交换器会把消息发送到备用交换器，RabbitMQ并不会通知发布者，因为消息有地方去了。  
 备用交换器就是普通的交换器，它也有对应绑定它的队列,没有任何特殊的地方。
+
+###消息发布时的可靠性与性能权衡
+####消息的获得方式
+- get方式(不推荐)： 消费方在一个死循环中不断的get尝试取消息  要不断的和rabbitmq发生网络通讯 性能差 
+```       
+ while(true){
+    //拉一条，自动确认的(rabbit 认为这条消息消费 -- 从队列中删除)
+    GetResponse getResponse = channel.basicGet(queueName, ture);
+    ...
+}
+```
+- 推送Consume方式 ： 最常用的方式 就是rabbitmq队列主动推送投递给消费者   
+```channel.basicConsume(queueName,false,consumer);```
