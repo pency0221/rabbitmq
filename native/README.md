@@ -98,3 +98,13 @@ channel.confirmSelect();
 ```
 - 推送Consume方式 ： 最常用的方式 就是rabbitmq队列主动推送投递给消费者   
 ```channel.basicConsume(queueName,false,consumer);```
+####消息的应答（自动确认和手动确认）
+- 自动确认：投递完就删除  
+消费时指定参数autoAck为true即可：  
+  channel.basicConsume(queueName, true, consumerA);//第二个参数就是 autoAck
+- 手动确认：做完业务之后在对消息进行确认让rabbitmq对消息删除  
+  channel.basicConsume(queueName, false, consumerA);令autoAck=false，消费者就有足够的时间处理消息(任务)，不用担心处理消息过程中消费者进程挂掉后消息丢失的问题，因为 RabbitMQ 会一直持有消息直到消费者显式调用 channel.basicAck为止。  
+  >等待投递的消息状态为ready  
+  >投递完ready->unchecked 待确认  
+  >消费方手动确认显式调用basicAck rabbitmq删除消息  
+  >如果到消费方断开连接还是unchecked未确认状态则有unchecked->ready 等待重新投递
