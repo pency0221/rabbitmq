@@ -108,3 +108,22 @@ channel.confirmSelect();
   >投递完ready->unchecked 待确认  
   >消费方手动确认显式调用basicAck rabbitmq删除消息  
   >如果到消费方断开连接还是unchecked未确认状态则有unchecked->ready 等待重新投递
+####Qos预取模式  
+相当于分批处理。这一批没确认不投递给下一批。  
+RabbitMQ提供了一种QOS（Quality of Service ，服务质量保证）功能，即在非自动确认消息的前提下，如果一定数目的消息（通过基于consume或者channel设置QOS的值）未被确认前，不进行消费新的消息，这样起到流控和保证质量的作用。  
+```
+//TODO 设置预取模式 150条预取(150都取出来 150， 210-150  60  ) 第二个参数 global代表channel级别限制  否则 消费者级别
+channel.basicQos(150,true);
+//TODO 使用预取前提 关闭自动确认 autoAck=false 默认消费者一般单条确认
+channel.basicConsume(queueName,false,consumer);
+```
+//消费者接受到消息业务操作之后单条确认 或分批确认 
+```
+//TODO 单条确认
+channel.basicAck(envelope.getDeliveryTag(),false);
+//TODO 批量确认
+if(meesageCount %50 ==0){
+   this.getChannel().basicAck(envelope.getDeliveryTag(),true);
+    System.out.println("批量消息费进行消息的确认------------");
+}
+```
