@@ -131,4 +131,25 @@ if(meesageCount %50 ==0){
 使用方法和生产者中使用一样，略。  
 注意点:
 - 手动确认模式：消息如果开启了事务，即使已经手动确认(发送了baseAck) rabbitmq 也不会删除 要等到事务提交后删除 出错回滚 （可以理解为 手动确认模式 开始事务 baseAck命令失效）
-- 自动确认模式：不支持开启事务 事务失效 直接删了出错也回滚不了
+- 自动确认模式：不支持开启事务 事务失效 直接删了出错也回滚不了  
+####消息的拒绝  
+消费者处理确认处理消息回应ack外，还可以拒绝消息，当消费者处理消息失败或者当前不能处理该消息时，可以给Broker发送一个拒绝消息的指令，并且可以要求Broker将该消息丢弃或者重新放入消息队列中。  
+Reject 和 Nack
+都能指定拒绝后rabbitmq是否requeue重新投递还是丢弃(拒绝后需要重新投递的会根据轮询规则投递给下一个消费者)  
+区别是:
+- reject只能拒绝单条
+- Nack可以批量拒绝    
+```
+try{
+ //消费者取到消息 业务处理过程出错或显示拒绝
+    String message = new String(body, "UTF-8");
+   //...
+    throw new RuntimeException("处理异常"+message);
+}catch (Exception e){
+    e.printStackTrace();
+    //TODO Reject方式拒绝(这里第2个参数requeue决定是否重新投递)
+    //channel.basicReject(envelope.getDeliveryTag(),true);
+    //TODO Nack方式的拒绝（第2个参数决定是否批量） 第三个参数requeue
+    channel.basicNack(envelope.getDeliveryTag(), false, true);
+}
+```  
