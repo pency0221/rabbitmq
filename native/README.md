@@ -140,16 +140,37 @@ Reject 和 Nack
 - reject只能拒绝单条
 - Nack可以批量拒绝    
 ```
-try{
- //消费者取到消息 业务处理过程出错或显示拒绝
-    String message = new String(body, "UTF-8");
-   //...
-    throw new RuntimeException("处理异常"+message);
-}catch (Exception e){
-    e.printStackTrace();
-    //TODO Reject方式拒绝(这里第2个参数requeue决定是否重新投递)
-    //channel.basicReject(envelope.getDeliveryTag(),true);
-    //TODO Nack方式的拒绝（第2个参数决定是否批量） 第三个参数requeue
-    channel.basicNack(envelope.getDeliveryTag(), false, true);
-}
+    try{
+     //消费者取到消息 业务处理过程出错或显示拒绝
+        String message = new String(body, "UTF-8");
+       //...
+        throw new RuntimeException("处理异常"+message);
+    }catch (Exception e){
+        e.printStackTrace();
+        //TODO Reject方式拒绝(这里第2个参数requeue决定是否重新投递)
+        //channel.basicReject(envelope.getDeliveryTag(),true);
+        //TODO Nack方式的拒绝（第2个参数决定是否批量） 第三个参数requeue
+        channel.basicNack(envelope.getDeliveryTag(), false, true);
+    }
+```  
+####DLX死信交换器  
+对于一些被拒绝且requeue=false不重新投递的消息、队列达到最大长度被迫出队队首的消息、长期存在队列上未消费过期的消息(如果设置了过期时间)这些属于"死信",顾明思议 没被正常消费 “死了”的消息。  
+rabbitMQ作为一个高级消息中间件,提出了死信交换器的概念来专门处理死了的信息（被拒绝可以重新投递的信息不能算死的）。  
+死信交换器是RabbitMQ 对 AMQP 规范的一个扩展，往往用在对问题消息的诊断上（主要针对消费者），还有延时队列（延时处理消息）的功能。一般用在秒单场景（一般用于秒单场景 比如需要记录秒单失败被拒绝的原始消息，或延时处理）  
+消息变成死信一般是以下三种情况：
+- 消息被拒绝，并且设置 requeue 参数为 false
+- 消息过期（默认情况下 Rabbit 中的消息不过期，但是可以设置队列的过期时间和消息的过期时间以达到消息过期的效果）
+- 队列达到最大长度（一般当设置了最大队列长度或大小并达到最大值时）
+
+正常的消息队列绑定处理它的死信的死信交换器:
+```
+    //TODO 声明死信交换器
+    channel.exchangeDeclare(DlxProcessConsumer.DLX_EXCHANGE_NAME, BuiltinExchangeType.TOPIC);
+    //TODO 绑定死信交换器 x-dead-letter-exchange参数是固定的 值为死信交换器的名字
+    /*声明一个队列，并绑定死信交换器*/
+    args.put("x-dead-letter-exchange", DlxProcessConsumer.DLX_EXCHANGE_NAME);
+    //TODO 还可以指定死信路由键，消息覆盖原来的路由键后发送给死信交换器
+    args.put("x-dead-letter-routing-key", "deal");
+    //TODO 声明正常消息的队列时 通过参数map绑定它的死信交换器
+    channel.queueDeclare(queueName,false,true,false,args);
 ```  
