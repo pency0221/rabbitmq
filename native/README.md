@@ -217,3 +217,12 @@ channel.queueDeclare(queueName,false,false, false,arguments);
 方法:  
 //声明队列时第二个参数 durable 传true  
 channel.queueDeclare(queueName,true,false, false,arguments);  
+#####扩展：
+以上只是队列的持久化，而想要达到消息的持久化,除了队列需要持久化外 生产者端还需满足创建时指定交换器、发布的消息、队列都持久化才可以：  
+```
+//TODO 创建持久化交换器  第三个参数 durable=true
+channel.exchangeDeclare(EXCHANGE_NAME,"direct",true);
+...
+//TODO 发布持久化的消息 Properties中(delivery-mode=2)
+channel.basicPublish(EXCHANGE_NAME,routekey,MessageProperties.PERSISTENT_TEXT_PLAIN,msg.getBytes());
+```  
