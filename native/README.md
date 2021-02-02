@@ -211,4 +211,9 @@ arguments.put("x-expires",10*1000);//断开10秒后被删除
 //其他参数...
 channel.queueDeclare(queueName,false,false, false,arguments);
 ...
-```
+```  
+####永久队列（持久化） 
+持久化队列：持久化队列会被持久化到磁盘里，即使重启rabbitmq服务器队列信息也不会丢失.（这里只是队列持久 非消息）  
+方法:  
+//声明队列时第二个参数 durable 传true  
+channel.queueDeclare(queueName,true,false, false,arguments);  
