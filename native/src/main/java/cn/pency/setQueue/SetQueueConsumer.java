@@ -31,7 +31,8 @@ public class SetQueueConsumer {
         //TODO /*自动过期队列--参数需要Map传递*/
         String queueName = "setQueue";
         Map<String, Object> arguments = new HashMap<String, Object>();
-        arguments.put("x-expires",10*1000);//10秒被删除
+        arguments.put("x-expires",10*1000);//断开 队列10秒被删除
+        arguments.put("x-message-ttl",40*1000);//消息40秒没被消费成为"死信"。有死信交换器就处理，没有就被丢弃
         //加入队列的各种参数...
         //durable持久化(false临时队列)   exclusive排他(单一消费者)  autoDelete自动删除
         /*queueDeclare(String queue, boolean durable, boolean exclusive, boolean autoDelete, Map<String, Object> arguments)*/

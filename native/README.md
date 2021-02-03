@@ -226,3 +226,12 @@ channel.exchangeDeclare(EXCHANGE_NAME,"direct",true);
 //TODO 发布持久化的消息 Properties中(delivery-mode=2)
 channel.basicPublish(EXCHANGE_NAME,routekey,MessageProperties.PERSISTENT_TEXT_PLAIN,msg.getBytes());
 ```  
+####队列级别消息过期  
+就是为每个队列设置消息的超时时间。只要给队列设置 x-message-ttl 参数，就设定了该队列所有消息的存活时间，时间单位是毫秒。消息到时间没被消费就成了"死信"。有死信交换器就处理，没有就被丢弃  
+```
+String queueName = "setQueue";
+Map<String, Object> arguments = new HashMap<String, Object>();
+arguments.put("x-message-ttl",40*1000);//消息40秒没被消费成为"死信"。有死信交换器就处理，没有就被丢弃
+//其他参数...
+channel.queueDeclare(queueName,false,false, false,arguments);\
+```  
