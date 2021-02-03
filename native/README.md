@@ -233,5 +233,33 @@ String queueName = "setQueue";
 Map<String, Object> arguments = new HashMap<String, Object>();
 arguments.put("x-message-ttl",40*1000);//消息40秒没被消费成为"死信"。有死信交换器就处理，没有就被丢弃
 //其他参数...
-channel.queueDeclare(queueName,false,false, false,arguments);\
+channel.queueDeclare(queueName,false,false, false,arguments);
 ```  
+###消息的属性  
+RabbitMQ 对消息进行了如下标准化：  
+按照 AMQP 的协议单个最大的消息大小为 16GB（2 的 64 次方），但是 RabbitMQ 将消息大小限定为 2GB（2 的 31 次方）。  
+发布消息时同时发布消息头帧（属性），是消息的描述：
+> //消息头帧对应的消就是息发布时的第三个参数BasicProperties：  
+> public void basicPublish(String exchange, String routingKey, BasicProperties props, byte[] body)  
+ 
+Basic.Properties的各个基本属性：  
+- content-type: 内容体的类型，如application/json
+- content-encoding: 压缩或编码格式
+- message-id和correlation-id: 唯一标识消息和消息响应，用于工作流程中实现消息跟踪
+- timestamp: 减少消息大小，描述消息创建时间
+- expiration: 表明消息过期
+- delivery-mode: 将消息写入磁盘或内存队列
+- app-id和user-id: 帮助追踪出现问题的消息发布者应用程序
+- type: 定义消息类型的自由格式字符串值
+- reply-to: 实现响应消息的路由
+- headers: 是一个映射表，定义自由格式的属性和实现rabbitmq路由    
+BasicProperties对象的构建可以使用AMQP提供了建造者模式构建：  
+```
+AMQP.BasicProperties respProp  
+        = new AMQP.BasicProperties.Builder()  
+        .replyTo(properties.getReplyTo())  
+        .correlationId(properties.getMessageId())
+        //.xxx....  
+        .build();
+channel.basicPublish(EXCHANGE_NAME,routekey,respProp,msg.getBytes());
+```
