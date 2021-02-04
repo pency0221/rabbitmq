@@ -262,4 +262,7 @@ AMQP.BasicProperties respProp
         //.xxx....  
         .build();
 channel.basicPublish(EXCHANGE_NAME,routekey,respProp,msg.getBytes());
-```
+```  
+####消息存活时间TTL  
+队列设置消息的 TTL是声明队列是通过“x-message-ttl” 参数设置的，这个队列中消息的ttl都是一样的。  
+发送时指定消息的TTL是通过消息头帧消息属性expiration指定的。  
