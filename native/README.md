@@ -266,3 +266,7 @@ channel.basicPublish(EXCHANGE_NAME,routekey,respProp,msg.getBytes());
 ####消息存活时间TTL  
 队列设置消息的 TTL是声明队列是通过“x-message-ttl” 参数设置的，这个队列中消息的ttl都是一样的。  
 发送时指定消息的TTL是通过消息头帧消息属性expiration指定的。  
+####消息的持久化  
+默认情况下，队列和交换器在服务器重启后都会消失，消息当然也是。  
+将队列和交换器的 durable 属性设为 true，缺省为 false，但是消息要持久化还不够，还需要将消息在发布前，将投递模式设置为 2。  
+总结：消息要持久化,必须要有持久化的队列、交换器的持久化和消息投递模式delivery-mode为2(消息持久化)。  

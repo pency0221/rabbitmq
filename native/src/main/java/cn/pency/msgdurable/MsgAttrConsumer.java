@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
 /**
-
  *类说明：消息持久化的消费者
  */
 public class MsgAttrConsumer {
@@ -22,7 +21,7 @@ public class MsgAttrConsumer {
         /*创建持久化交换器*/
         channel.exchangeDeclare(MsgAttrProducer.EXCHANGE_NAME,"direct",true);
 
-        //TODO 声明一个持久化队列(durable=true)
+         //TODO 声明一个持久化队列(durable=true)
         String queueName = "msgdurable";
         channel.queueDeclare(queueName,true,false,false,null);
 
