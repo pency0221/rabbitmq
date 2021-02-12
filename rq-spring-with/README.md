@@ -17,10 +17,17 @@
 
 代码：在消费者bean的onMessage方法内写消费消息的业务逻辑。
 
-####高级配置： 
+#### 高级配置： 
 生产者端常配置：  
-路由失败通知mandatory的回调:rabbittemplate配置中开启mandatory不可路由通知及指明回调处理类，回调处理类的特点是实现了ReturnCallback接口。  
-发送者确认通知confirm的回调:和mandatory路由失败通知配置相似，也是在rabbittemplate指明回调处理类，区别是需要在配置CachingConnectionFactory中开启，接收ack/nack的处理类实现的是ConfirmCallback接口。  
+1. 路由失败通知mandatory的回调:rabbittemplate配置中开启mandatory不可路由通知及指明回调处理类，回调处理类的特点是实现了ReturnCallback接口。  
+2. 发送者确认通知confirm的回调:和mandatory路由失败通知配置相似，也是在rabbittemplate指明回调处理类，区别是需要在配置CachingConnectionFactory中开启，接收ack/nack的处理类实现的是ConfirmCallback接口。  
+
+消费者端常配置：  
+1. 手动确认：  
+配置：消费者bean和队列的绑定关系是在监听容器listener-container中配置的，所以消息消费者收到的确认方式也在这里配置，只需要设置acknowledge（“告知已收到“的方式）为manual（“手动的”）即可,acknowledge="manual"。  
+代码改动：消费者要手动确认就必须要拿到channel对象，而消费者实现的简单的消息监听接口MessageListener只能拿到消息，拿不到channel，所以开启了手动消息确认，消费者bean就需要改变继承的接口为功能更强大能拿到channel的ChannelAwareMessageListener接口，
+然后调用channel.basicAck方法对消息手动确认。
+
 
 
 

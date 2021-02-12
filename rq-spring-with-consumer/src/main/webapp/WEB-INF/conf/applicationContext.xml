@@ -83,12 +83,13 @@
     <bean id="h3_Service" class="cn.pency.service.fanout.H3_Service">
     </bean>
 
+    <!--todo acknowledge“告知已收到” manual“手动的”  acknowledge="manual"也就是对消息要手动确认收到 -->
     <!--监听容器 消费者端特有配置 绑定队列和消费者-->
-    <rabbit:listener-container connection-factory="rabbitConnectionFactory">
+    <rabbit:listener-container connection-factory="rabbitConnectionFactory" acknowledge="manual">
         <!--todo 指明哪个队列上的消息被哪个消费者（的哪个方法）消费-->
         <rabbit:listener ref="h1_Service" queues="h1_queue" method="onMessage"/>
-        <rabbit:listener ref="h2_Service" queues="h2_queue" method="onMessage"/>
-        <rabbit:listener ref="allTopicService" queues="all_queue" method="onMessage"/>
+        <!--<rabbit:listener ref="h2_Service" queues="h2_queue" method="onMessage"/>
+        <rabbit:listener ref="allTopicService" queues="all_queue" method="onMessage"/>-->
     </rabbit:listener-container>
 
 </beans>
