@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 查找最新的schemaLocation 访问 http://www.springframework.org/schema/ -->
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:rabbit="http://www.springframework.org/schema/rabbit"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+	   	http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+		http://www.springframework.org/schema/rabbit
+		http://www.springframework.org/schema/rabbit/spring-rabbit-2.0.xsd
+		http://www.springframework.org/schema/context
+		http://www.springframework.org/schema/context/spring-context.xsd">
+
+     <!-- 配置扫描路径 -->
+     <context:component-scan base-package="cn.pency">
+     	<!-- 只扫描Service，也可以添加Repostory，但是要把Controller排除在外，Controller由spring-mvc.xml去加载 -->
+     	<!-- <context:include-filter type="annotation" expression="org.springframework.stereotype.Service" /> -->
+     	<!-- <context:include-filter type="annotation" expression="org.springframework.stereotype.Repository" /> -->
+     	<!-- <context:include-filter type="annotation" expression="org.springframework.stereotype.Component" /> -->
+     	<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+     </context:component-scan>
+
+	<!-- rabbitMQ配置 -->
+	<bean id="rabbitConnectionFactory"
+		  class="org.springframework.amqp.rabbit.connection.CachingConnectionFactory">
+		<constructor-arg value="127.0.0.1"/>
+		<property name="username" value="guest"/>
+		<property name="password" value="guest"/>
+		<!-- todo channel缓存允许空闲的最大 channel数高并发情况下避免 channel关关开开影响性-->
+		<property name="channelCacheSize" value="8"/>
+		<property name="port" value="5672"></property>
+    </bean>
+    <!--todo Spring的rabbitmq admin 相当于连接配置了创建队列路由器等等相关的权限-->
+	<rabbit:admin connection-factory="rabbitConnectionFactory"/>
+
+    <!-- 创建rabbitTemplate 消息模板类 -->
+    <bean id="rabbitTemplate" class="org.springframework.amqp.rabbit.core.RabbitTemplate">
+        <constructor-arg ref="rabbitConnectionFactory"/>
+    </bean>
+	<!--或者使用 rabbit自己的 template标签和上面 Spring一样-->
+	<!--<rabbit:template connection-factory="rabbitConnectionFactory"/>-->
+
+
+    <!--生产者也可以声明队列-->
+    <rabbit:queue name="h4_queue" durable="false">
+    </rabbit:queue>
+	<!--fanout交换器-->
+    <rabbit:fanout-exchange name="fanout-exchange"
+          xmlns="http://www.springframework.org/schema/rabbit" durable="false">
+        <bindings>
+            <binding queue="h4_queue"></binding>
+        </bindings>
+    </rabbit:fanout-exchange>
+	<!-- topic交换器-->
+    <rabbit:topic-exchange name="topicexchange" xmlns="http://www.springframework.org/schema/rabbit" durable="false"/>
+
+    </beans>
