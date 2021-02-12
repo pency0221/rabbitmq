@@ -17,8 +17,11 @@
 
 代码：在消费者bean的onMessage方法内写消费消息的业务逻辑。
 
-####高级配置：  
-路由失败通知mandatory:rabbittemplate配置中开启mandatory不可路由通知及指明回调处理类，回调处理类的特点是实现了ReturnCallback接口。  
+####高级配置： 
+生产者端常配置：  
+路由失败通知mandatory的回调:rabbittemplate配置中开启mandatory不可路由通知及指明回调处理类，回调处理类的特点是实现了ReturnCallback接口。  
+发送者确认通知confirm的回调:和mandatory路由失败通知配置相似，也是在rabbittemplate指明回调处理类，区别是需要在配置CachingConnectionFactory中开启，接收ack/nack的处理类实现的是ConfirmCallback接口。  
+
 
 
   
