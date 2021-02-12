@@ -26,7 +26,12 @@
 1. 手动确认：  
 配置：消费者bean和队列的绑定关系是在监听容器listener-container中配置的，所以消息消费者收到的确认方式也在这里配置，只需要设置acknowledge（“告知已收到“的方式）为manual（“手动的”）即可,acknowledge="manual"。  
 代码改动：消费者要手动确认就必须要拿到channel对象，而消费者实现的简单的消息监听接口MessageListener只能拿到消息，拿不到channel，所以开启了手动消息确认，消费者bean就需要改变继承的接口为功能更强大能拿到channel的ChannelAwareMessageListener接口，
-然后调用channel.basicAck方法对消息手动确认。
+然后调用channel.basicAck方法对消息手动确认。  
+   
+2. Qos
+限制消费者预取数量，保证消息消费确认质量，在listener-container中配置prefetch，prefetch="50",当这个消费者有50个消息没有ack之前不再投递给它，即消费者粒度限制了最大unacked的数量。  
+   
+   
 
 
 
