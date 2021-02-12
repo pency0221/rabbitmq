@@ -15,6 +15,11 @@
   
 - 监听容器：listener-container，消费者端特有配置，用来绑定队列和消费者，指明哪个队列上的消息被哪个消费者（的哪个方法）消费
 
-代码：在消费者bean的onMessage方法内写消费消息的业务逻辑。  
+代码：在消费者bean的onMessage方法内写消费消息的业务逻辑。
+
+####高级配置：  
+路由失败通知mandatory:rabbittemplate配置中开启mandatory不可路由通知及指明回调处理类，回调处理类的特点是实现了ReturnCallback接口。  
+
+
   
 

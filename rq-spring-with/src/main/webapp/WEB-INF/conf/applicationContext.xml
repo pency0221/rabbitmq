@@ -29,16 +29,19 @@
 		<!-- todo channel缓存允许空闲的最大 channel数高并发情况下避免 channel关关开开影响性-->
 		<property name="channelCacheSize" value="8"/>
 		<property name="port" value="5672"></property>
+        <!--todo 开启发送者确认通知Confirms模式的配置开关 必须配置在CachingConnectionFactory这里-->
+        <property name="publisherConfirms" value="true"></property>
     </bean>
     <!--todo Spring的rabbitmq admin 相当于连接配置了创建队列路由器等等相关的权限-->
 	<rabbit:admin connection-factory="rabbitConnectionFactory"/>
 
     <!-- 创建rabbitTemplate 消息模板类 -->
-    <bean id="rabbitTemplate" class="org.springframework.amqp.rabbit.core.RabbitTemplate">
+<!--    <bean id="rabbitTemplate" class="org.springframework.amqp.rabbit.core.RabbitTemplate" >
         <constructor-arg ref="rabbitConnectionFactory"/>
-    </bean>
-	<!--或者使用 rabbit自己的 template标签和上面 Spring一样-->
-	<!--<rabbit:template connection-factory="rabbitConnectionFactory"/>-->
+    </bean>-->
+	<!--todo 可以在template开启路由失败通知及指明回调处理类-->
+	<rabbit:template connection-factory="rabbitConnectionFactory"
+                     mandatory="true" return-callback="sendReturnCallback"/>
 
 
     <!--生产者也可以声明队列-->
