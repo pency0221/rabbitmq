@@ -272,5 +272,35 @@ channel.basicPublish(EXCHANGE_NAME,routekey,respProp,msg.getBytes());
 总结：消息要持久化,必须要有持久化的队列、交换器的持久化和消息投递模式delivery-mode为2(消息持久化)。  
 ####Request-Response 模式  
 Mq一般的模式中都是一方负责发送消息而另外一方负责处理。而实际中的很多应用相当于一种一应一答的过程，需要双方都能给对方发送消息。于是请求-应答的这种通信方式也很重要。它也应用的很普遍。  
-主要流程：相当于生产者通过队列发送给消费者消息后 消费者通过另外一个响应队列再给原先的生产者回应一个消息(也可以理解成两方都既是生产者又是消费者) 通过消息属性的message-id和correlation-id做原始消息和响应消息的关联。  
+主要流程：相当于生产者通过队列发送给消费者消息后 消费者通过另外一个响应队列再给原先的生产者回应一个消息(也可以理解成两方都既是生产者又是消费者) 通过消息属性的message-id和correlation-id做原始消息和响应消息的关联。    
+####集群相关  
+镜像队列：Rabbitmq集群内节点默认只会同步元数据和交换器，而队列和消息不会进行同步，所以一宕机消息就丢失了，出于高可用的目的引入 RabbitMQ 的镜像队列机制，将 queue 镜像到 cluster 中其他的节点之上。在该实现下，如果集群中的一个节点失效了，queue 能自动(个人理解这里只是会自动选举最早加入集群的队列为新的master 非程序连接 想要生产者和消费者也自动需要HaProxy)地切换到镜像中的另一个节点以保证服务的可用性。在通常的用法中，针对每一个镜像队列都包含一个 master 和多个 slave，分别对应于不同的节点。slave 会准确地按照 master 执行命令的顺序进行命令执行，故 slave 与 master 上维护的状态应该是相同的。  
+代码方式：
+```
+...
+//TODO 镜像队列 参数配置  
+//todo 这里可以填all 即表示集群内所有节点上都会镜像出这个队列 如果选nodes 那么在根据"x-ha-nodes" 参数指定会镜像的节点  
+arguments.put("x-ha-policy","nodes");  
+arguments.put("x-ha-nodes","[rabbit@node1,rabbit2@node2]");  
+channel.queueDeclare(queueName,false,false,false,arguments);
+...
+```    
+管理控制台命令行模式:  
+一般会出现开发用户没有配置权限，一般需要管理员通过控制台命令行设置镜像队列。  
+命令:rabbitmqctl set_policy [-p Vhost] Name Pattern Definition [Priority]  
+解释：  
+Pattern: queue 的匹配模式(正则表达式)  
+Definition：镜像定义，包括三个部分 ha-mode, ha-params, ha-sync-mode
+
+- ha-mode:指明镜像队列的模式 all/exactly/nodes
+* * all 表示在集群中所有的节点上进行镜像
+* * exactly：表示在指定个数的节点上进行镜像，节点的个数由ha-params指定
+* * nodes：表示在指定的节点上进行镜像，节点名称通过ha-params指定
+- ha-params：作为参数，为ha-mode的补充 （ha-mode为all是无用 但是比如为nodes时这里可以指定哪几个节点）
+- ha-sync-mode：进行队列中消息的同步方式，有效值为automatic和manual(手动)  
+例如，对队列名称以“queue_”开头的所有队列进行镜像，并在集群的两个节点上完成进行，进行自动
+policy 的设置命令为：rabbitmqctl set_policy ha-queue-two "^queue_" '{"ha-mode":"exactly","ha-params":2,"ha-sync-mode":"automatic"}'
+
+
+
 
