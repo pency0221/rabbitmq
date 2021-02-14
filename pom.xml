@@ -10,11 +10,11 @@
     <packaging>pom</packaging>
     <modules>
         <module>native</module>
-      <!--  <module>rq-spring-with</module>
+        <module>rq-spring-with</module>
         <module>rq-spring-with-consumer</module>
         <module>rq-order</module>
         <module>rq-depot</module>
-        <module>rq-springboot-with</module>-->
+        <module>rq-springboot-with</module>
     </modules>
     <!-- RabbitMQ原生客户端-->
     <dependencies>

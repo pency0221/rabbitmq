@@ -1,5 +1,6 @@
 package cn.pency.consumer_balance.qos;
 
+import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
@@ -27,21 +28,27 @@ public class QosProducer {
         // 创建一个信道
         Channel channel = connection.createChannel();
         // 指定转发
-        //channel.exchangeDeclare(EXCHANGE_NAME, "direct");
+        channel.exchangeDeclare(EXCHANGE_NAME, "direct",true);
+
+        String queueName = "focuserror";
+        channel.queueDeclare(queueName,true,false,false,null);
+        String routekey = "error";/*表示只关注error级别的日志消息*/
+        channel.queueBind(queueName,EXCHANGE_NAME,routekey);
         // 指定转发
-        channel.exchangeDeclare("kajsdi", "direct");
+        //channel.exchangeDeclare("kajsdi", "direct");
         //TODO 生产者发送非常多的数据
         //发送210条消息，其中第210条消息表示本批次消息的结束
-        for(int i=0;i<210;i++){
+        int count=50000;
+        for(int i=0;i<count;i++){
             // 发送的消息
-            String message = "Hello World_"+(i+1);
-            if(i==209){ //最后一条
+            String message = "===================================Hello World_"+(i+1);
+            if(i==count-1){ //最后一条
                 message = "stop";
             }
             //参数1：exchange name
             //参数2：routing key
             channel.basicPublish(EXCHANGE_NAME, "error",
-                    null, message.getBytes());
+                    new AMQP.BasicProperties().builder().deliveryMode(2).build(), message.getBytes());
             System.out.println(" [x] Sent 'error':'"
                     + message + "'");
         }
